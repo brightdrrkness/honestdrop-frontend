@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HonestDrop Prototype</title>
+  <style>
+    body {
+      background-color: #000;
+      font-family: 'Courier New', monospace;
+      color: white;
+      text-align: center;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    .side-img {
+      position: fixed;
+      top: 0;
+      height: 100vh;
+      width: auto;
+      z-index: -1;
+    }
+    .left-img { left: 0; }
+    .right-img { right: 0; }
+
+    .container {
+      width: 520px;
+      margin: 40px auto;
+      background-color: #222;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.7);
+      position: relative;
+      z-index: 10;
+    }
+
+    button {
+      background-color: #f7931a;
+      color: black;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 15px 28px;
+      width: 300px;
+      cursor: pointer;
+      margin: 7px auto;
+      display: block;
+      transition: background-color 0.25s ease;
+    }
+    button:hover:enabled { background-color: #ffae42; }
+
+    .walletButton {
+      width: auto;
+      padding: 12px 20px;
+      font-size: 16px;
+    }
+
+    .button-row { display: flex; justify-content: center; align-items: center; gap: 10px; }
+    #coffee { width: 130px; }
+
+    .prototype { font-size: 12px; margin-top: 15px; color: #ddd; line-height: 1.4; }
+    .mission-statement { font-size: 10px; margin-top: 5px; cursor: pointer; }
+    #satCounter { margin-top: 8px; font-size: 16px; color: #f7931a; }
+
+    /* Popup styling */
+    #withdrawOverlay, #withdrawPopup,
+    #walletInstructionPopup,
+    #missionOverlay, #missionPopup,
+    #adOverlay, #adPopup,
+    #introOverlay, #introPopup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    #withdrawOverlay, #missionOverlay, #adOverlay, #introOverlay {
+      background: rgba(0,0,0,0.6);
+      z-index: 9998;
+    }
+
+    #withdrawPopup, #walletInstructionPopup, #missionPopup, #adPopup, #introPopup {
+      background: #222;
+      width: 75%; max-width: 700px;
+      padding: 35px;
+      border: 2px solid #f7931a;
+      border-radius: 15px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      text-align: center;
+      overflow-y: auto;
+      max-height: 90vh;
+    }
+
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <img src="side-coins-left.png" class="side-img left-img">
+  <img src="side-coins-right.png" class="side-img right-img">
+
+  <div class="container">
+    <img src="logo.png" alt="HonestDrop Logo" width="350" />
+    <p>Watch an ad. Get Bitcoin.<br>No quests. No gem packs. No BS.</p>
+
+    <div class="button-row">
+      <button id="adButton">▶ Watch Ad to Earn Bitcoin</button>
+      <img id="coffee" src="bitcoin8bit.png" alt="Coffee Mug" />
+    </div>
+
+    <button id="withdrawButton">💸 Withdraw Bitcoin (Lightning)</button>
+    <p id="satCounter">Total Earned: 0 sats</p>
+
+    <p class="prototype">
+      🔧 Prototype Mode: Manual payout.<br>
+      ⏳ Ad monetization coming soon via Bitstackd.<br>
+      ☕ “One step at a time. Preferably caffeinated.”
+    </p>
+
+    <button id="popupButton">Caffeine > Logic</button>
+    <p class="mission-statement">Mission Statement</p>
+  </div>
+
+  <!-- 🔥 First-time intro popup -->
+  <div id="introOverlay"></div>
+  <div id="introPopup">
+    <h2>Welcome to HonestDrop</h2>
+    <p>
+      You watch an ad → You get Bitcoin.<br><br>
+      Ads are limited to <b>10 per day</b> so we don’t go bankrupt<br>
+      while we’re still fueled by coffee and instant ramen.<br><br>
+      No quests. No gem packs. Just honesty.<br><br>
+      <i>(This message will only show once.)</i>
+    </p>
+    <button onclick="closeIntro()">Got it</button>
+  </div>
+
+  <!-- Withdrawal popup -->
+  <div id="withdrawOverlay"></div>
+  <div id="withdrawPopup">
+    <h2>Withdraw Bitcoin</h2>
+    <p>Select a wallet:</p>
+
+    <button class="walletButton" onclick="showWalletInstructions('Wallet of Satoshi')">Wallet of Satoshi</button>
+    <button class="walletButton" onclick="showWalletInstructions('Cash App')">Cash App</button>
+    <button class="walletButton" onclick="showWalletInstructions('ZBD')">ZBD</button>
+    <button class="walletButton" onclick="showWalletInstructions('Other Lightning Wallet')">Other Lightning Wallet</button>
+
+    <br>
+    <button onclick="closeWithdraw()">Cancel</button>
+  </div>
+
+  <!-- Wallet instruction popup -->
+  <div id="walletInstructionPopup">
+    <h2 id="walletTitle">Wallet Instructions</h2>
+    <p id="walletInstructions"></p>
+
+    <input type="text" id="walletInput" placeholder="Paste Lightning address or invoice here">
+    <p style="font-size: 13px; color: #bbb;">Works with any Lightning-enabled wallet.</p>
+
+    <br>
+    <button onclick="backToWithdraw()">← Back</button>
+    <button onclick="processFinalWithdrawal()">Confirm Withdrawal</button>
+  </div>
+
+  <!-- Mission popup -->
+  <div id="missionOverlay"></div>
+  <div id="missionPopup">
+    <h2>Mission Statement</h2>
+    <p>
+      HonestDrop exists because your time matters.<br><br>
+      We're not here to make you mine fake pixels or pretend you're saving a galaxy to earn 6 cents.
+      We're here to give you Bitcoin directly — because the advertising is what funds these games anyway.
+      We're just skipping all the unnecessary steps and being honest about it.<br><br>
+      We're not trying to buy a Lambo. We're trying to buy ramen and pay rent while building something real.<br>
+      You watch an ad. You get Bitcoin. No quests. No gem packs. No bullshit.<br><br>
+      Powered by honesty, caffeine strong enough to question life choices, and whatever's on sale at the grocery store.
+    </p>
+    <button onclick="closeMission()">Close</button>
+  </div>
+
+  <!-- Ad popup -->
+  <div id="adOverlay"></div>
+  <div id="adPopup">
+    <h2>Advertisement</h2>
+    <div id="adContainer" style="margin:10px auto; width:100%; max-width:600px; height:300px;">
+      <p id="adStatusText">[Simulation] Working harder than your morning coffee...</p>
+      <p style="font-size:12px; color:#bbb;">
+        (Once Bitstackd approves, replace the above line with their ad script)
+      </p>
+    </div>
+    <p id="adCountdown">Ad ends in 5...</p>
+  </div>
+
+  <script>
+    let sats = parseInt(localStorage.getItem("sats") || "0");
+    const rewardAmount = 16;
+    const dailyLimit = 10;
+    let adCount = parseInt(localStorage.getItem("adCount") || "0");
+    let lastReset = parseInt(localStorage.getItem("lastReset") || Date.now());
+    let selectedWallet = "";
+
+    // First-time popup logic
+    window.onload = () => {
+      if (!localStorage.getItem("introShown")) {
+        document.getElementById("introOverlay").style.display = "block";
+        document.getElementById("introPopup").style.display = "block";
+      }
+    };
+
+    function closeIntro() {
+      localStorage.setItem("introShown", "true");
+      document.getElementById("introOverlay").style.display = "none";
+      document.getElementById("introPopup").style.display = "none";
+    }
+
+    function resetIfNeeded() {
+      if (Date.now() - lastReset > 86400000) {
+        adCount = 0;
+        localStorage.setItem("adCount", adCount);
+        lastReset = Date.now();
+        localStorage.setItem("lastReset", lastReset);
+      }
+    }
+
+    function updateCounter() {
+      document.getElementById("satCounter").innerText =
+        `Total Earned: ${sats} sats | Ads: ${adCount}/${dailyLimit}`;
+    }
+
+    resetIfNeeded();
+    updateCounter();
+
+    // Watch ad logic
+    document.getElementById("adButton").addEventListener("click", () => {
+      if (adCount >= dailyLimit) {
+        alert("🚫 That's it for today. Faucet needs more caffeine.");
+        return;
+      }
+
+      document.getElementById("adOverlay").style.display = "block";
+      document.getElementById("adPopup").style.display = "block";
+
+      let remaining = 5;
+      document.getElementById("adCountdown").innerText = `Ad ends in ${remaining}...`;
+
+      let timer = setInterval(() => {
+        remaining--;
+        document.getElementById("adCountdown").innerText = `Ad ends in ${remaining}...`;
+        if (remaining <= 0) {
+          clearInterval(timer);
+          closeAdPopup();
+          rewardAdWatch();
+        }
+      }, 1000);
+    });
+
+    function closeAdPopup() {
+      document.getElementById("adOverlay").style.display = "none";
+      document.getElementById("adPopup").style.display = "none";
+    }
+
+    function rewardAdWatch() {
+      adCount++;
+      localStorage.setItem("adCount", adCount);
+      sats += rewardAmount;
+      localStorage.setItem("sats", sats);
+      updateCounter();
+      alert(`🎉 +${rewardAmount} sats earned!`);
+    }
+
+    // Withdrawal logic
+    document.getElementById("withdrawButton").addEventListener("click", () => {
+      document.getElementById("withdrawOverlay").style.display = "block";
+      document.getElementById("withdrawPopup").style.display = "block";
+    });
+
+    function showWalletInstructions(wallet) {
+      selectedWallet = wallet;
+      document.getElementById("walletTitle").innerText = wallet + " Instructions";
+
+      let instructions = {
+        "Wallet of Satoshi": "Open Wallet of Satoshi → Tap Receive → Copy your Lightning Address → Paste it below.",
+        "Cash App": "In Cash App: Tap Money → Bitcoin → Receive → Lightning → Copy the address → Paste below.",
+        "ZBD": "Open ZBD → Go to Wallet → Tap Receive Lightning → Copy address → Paste below.",
+        "Other Lightning Wallet": "Open your Lightning wallet → Find Receive → Copy Lightning address → Paste below."
+      };
+
+      document.getElementById("walletInstructions").innerText = instructions[wallet] || "";
+      document.getElementById("withdrawPopup").style.display = "none";
+      document.getElementById("walletInstructionPopup").style.display = "block";
+    }
+
+    function backToWithdraw() {
+      document.getElementById("walletInstructionPopup").style.display = "none";
+      document.getElementById("withdrawPopup").style.display = "block";
+    }
+
+    function processFinalWithdrawal() {
+      let val = document.getElementById("walletInput").value;
+      if (!val) {
+        alert("Please enter your Lightning address or invoice first!");
+        return;
+      }
+
+      alert(`Withdrawal Requested via ${selectedWallet}.\nPrototype Mode: We'll manually send sats.\nAddress/Invoice: ${val}`);
+      closeWithdraw();
+    }
+
+    function closeWithdraw() {
+      document.getElementById("withdrawOverlay").style.display = "none";
+      document.getElementById("withdrawPopup").style.display = "none";
+      document.getElementById("walletInstructionPopup").style.display = "none";
+    }
+
+    // Mission logic
+    document.getElementById("popupButton").addEventListener("click", () => {
+      document.getElementById("missionOverlay").style.display = "block";
+      document.getElementById("missionPopup").style.display = "block";
+    });
+    document.querySelector(".mission-statement").addEventListener("click", () => {
+      document.getElementById("missionOverlay").style.display = "block";
+      document.getElementById("missionPopup").style.display = "block";
+    });
+
+    function closeMission() {
+      document.getElementById("missionOverlay").style.display = "none";
+      document.getElementById("missionPopup").style.display = "none";
+    }
+  </script>
+</body>
+</html>
