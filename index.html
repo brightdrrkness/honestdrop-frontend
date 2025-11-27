@@ -50,37 +50,36 @@
     }
     button:hover:enabled { background-color: #ffae42; }
 
-    .walletButton {
-      width: auto;
-      padding: 12px 20px;
-      font-size: 16px;
+    #withdrawButton .speed-subtext {
+      font-size: 14px;
+      color: #fff;
+      display: block;
+      margin-top: 2px;
     }
 
     .button-row { display: flex; justify-content: center; align-items: center; gap: 10px; }
     #coffee { width: 130px; }
 
     .prototype { font-size: 12px; margin-top: 15px; color: #ddd; line-height: 1.4; }
-    .mission-statement { font-size: 10px; margin-top: 5px; cursor: pointer; }
+    .mission-statement { font-size: 10px; margin-top: 5px; }
     #satCounter { margin-top: 8px; font-size: 16px; color: #f7931a; }
 
-    /* Popup styling */
     #withdrawOverlay, #withdrawPopup,
-    #walletInstructionPopup,
     #missionOverlay, #missionPopup,
     #adOverlay, #adPopup,
-    #introOverlay, #introPopup {
+    #spinnerOverlay, #spinnerPopup {
       display: none;
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
     }
 
-    #withdrawOverlay, #missionOverlay, #adOverlay, #introOverlay {
+    #withdrawOverlay, #missionOverlay, #adOverlay, #spinnerOverlay {
       background: rgba(0,0,0,0.6);
       z-index: 9998;
     }
 
-    #withdrawPopup, #walletInstructionPopup, #missionPopup, #adPopup, #introPopup {
+    #withdrawPopup, #missionPopup, #adPopup, #spinnerPopup {
       background: #222;
       width: 75%; max-width: 700px;
       padding: 35px;
@@ -94,13 +93,16 @@
       max-height: 90vh;
     }
 
-    input[type="text"] {
-      width: 80%;
+    .ad-placeholder {
+      border: 2px dashed #555;
       padding: 10px;
-      font-size: 14px;
-      border-radius: 8px;
-      border: none;
-      margin-top: 10px;
+      margin-top: 15px;
+      color: #bbb;
+      font-size: 12px;
+      width: 100%;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
     }
   </style>
 </head>
@@ -119,111 +121,114 @@
       <img id="coffee" src="bitcoin8bit.png" alt="Coffee Mug" />
     </div>
 
-    <button id="withdrawButton">💸 Withdraw Bitcoin (Lightning)</button>
+    <button id="withdrawButton">
+      💸 Withdraw Bitcoin<br>
+      <span class="speed-subtext">Powered by SpeedWallet ⚡</span>
+    </button>
+
     <p id="satCounter">Total Earned: 0 sats</p>
 
+    <button id="spinnerButton">🎡 Spin & Win (Coming Soon)</button>
+
     <p class="prototype">
-      🔧 Prototype Mode: Manual payout.<br>
+      🔧 Prototype Mode: Manual payout + live test.<br>
       ⏳ Ad monetization coming soon via Bitstackd.<br>
       ☕ “One step at a time. Preferably caffeinated.”
     </p>
 
     <button id="popupButton">Caffeine > Logic</button>
     <p class="mission-statement">Mission Statement</p>
+
+    <div class="ad-placeholder">
+      📢 Ad Space – Future Spinner Feature
+    </div>
   </div>
 
-  <!-- 🔥 First-time intro popup -->
-  <div id="introOverlay"></div>
-  <div id="introPopup">
-    <h2>Welcome to HonestDrop</h2>
-    <p>
-      You watch an ad → You get Bitcoin.<br><br>
-      Ads are limited to <b>10 per day</b> so we don’t go bankrupt<br>
-      while we’re still fueled by coffee and instant ramen.<br><br>
-      No quests. No gem packs. Just honesty.<br><br>
-      <i>(This message will only show once.)</i>
-    </p>
-    <button onclick="closeIntro()">Got it</button>
+  <!-- Ad Popup -->
+  <div id="adOverlay"></div>
+  <div id="adPopup">
+    <h2>📺 Ad in Progress</h2>
+    <p id="adCountdown" style="font-size:16px;">Ad ends in 5...</p>
+    <div class="ad-placeholder">📢 Static Ad Placeholder</div>
   </div>
 
-  <!-- Withdrawal popup -->
+  <!-- Spinner Popup -->
+  <div id="spinnerOverlay"></div>
+  <div id="spinnerPopup">
+    <h2>🎡 Spin & Win (Coming Soon)</h2>
+    <img src="spinner-comingsoon.png" alt="Spinner Preview" style="width:300px; margin:15px auto; display:block;" />
+    <div class="ad-placeholder">📢 Ad Space – Spinner Popup</div>
+    <button onclick="closeSpinner()">Close</button>
+  </div>
+
+  <!-- Withdrawal Popup -->
   <div id="withdrawOverlay"></div>
   <div id="withdrawPopup">
     <h2>Withdraw Bitcoin</h2>
-    <p>Select a wallet:</p>
+    <p style="font-size:13px; line-height:1.4;">
+      You’re in <strong>prototype mode</strong> using <strong>SpeedWallet</strong> for live payouts.<br><br>
+      For now, each device can do <strong>one live withdrawal of up to 15 sats</strong> while we line up sponsors.
+    </p>
 
-    <button class="walletButton" onclick="showWalletInstructions('Wallet of Satoshi')">Wallet of Satoshi</button>
-    <button class="walletButton" onclick="showWalletInstructions('Cash App')">Cash App</button>
-    <button class="walletButton" onclick="showWalletInstructions('ZBD')">ZBD</button>
-    <button class="walletButton" onclick="showWalletInstructions('Other Lightning Wallet')">Other Lightning Wallet</button>
+    <p style="font-size:11px; color:#bbb;">
+      Works with ANY Lightning-enabled wallet (Wallet of Satoshi, Phoenix, Breez, Cash App, etc.).<br>
+      Just create an invoice in your wallet, paste it below, and confirm.
+    </p>
 
-    <br>
-    <button onclick="closeWithdraw()">Cancel</button>
-  </div>
+    <ol style="text-align:left; font-size:13px; max-width:500px; margin:auto;">
+      <li>Generate a Lightning receive invoice in your wallet.</li>
+      <li>Paste the invoice below.</li>
+      <li>Confirm withdrawal to send your sats.</li>
+    </ol>
 
-  <!-- Wallet instruction popup -->
-  <div id="walletInstructionPopup">
-    <h2 id="walletTitle">Wallet Instructions</h2>
-    <p id="walletInstructions"></p>
-
-    <input type="text" id="walletInput" placeholder="Paste Lightning address or invoice here">
-    <p style="font-size: 13px; color: #bbb;">Works with any Lightning-enabled wallet.</p>
-
-    <br>
-    <button onclick="backToWithdraw()">← Back</button>
+    <input type="text" id="walletInput" placeholder="Paste your Lightning invoice">
+    <br><br>
     <button onclick="processFinalWithdrawal()">Confirm Withdrawal</button>
+    <button onclick="closeWithdraw()">Cancel</button>
+
+    <div class="ad-placeholder">
+      📢 Prime spot for wallet ads — especially wallets with "Speed" in the name.<br>
+      Where users withdraw their Bitcoin… just saying 😉
+    </div>
   </div>
 
-  <!-- Mission popup -->
+  <!-- Mission Statement Popup -->
   <div id="missionOverlay"></div>
   <div id="missionPopup">
-    <h2>Mission Statement</h2>
-    <p>
-      HonestDrop exists because your time matters.<br><br>
-      We're not here to make you mine fake pixels or pretend you're saving a galaxy to earn 6 cents.
-      We're here to give you Bitcoin directly — because the advertising is what funds these games anyway.
-      We're just skipping all the unnecessary steps and being honest about it.<br><br>
-      We're not trying to buy a Lambo. We're trying to buy ramen and pay rent while building something real.<br>
-      You watch an ad. You get Bitcoin. No quests. No gem packs. No bullshit.<br><br>
-      Powered by honesty, caffeine strong enough to question life choices, and whatever's on sale at the grocery store.
-    </p>
-    <button onclick="closeMission()">Close</button>
-  </div>
+    <p style="white-space: pre-line; font-size:14px; line-height:1.5; max-width:600px; margin:0 auto; text-align:left;">
 
-  <!-- Ad popup -->
-  <div id="adOverlay"></div>
-  <div id="adPopup">
-    <h2>Advertisement</h2>
-    <div id="adContainer" style="margin:10px auto; width:100%; max-width:600px; height:300px;">
-      <p id="adStatusText">[Simulation] Working harder than your morning coffee...</p>
-      <p style="font-size:12px; color:#bbb;">
-        (Once Bitstackd approves, replace the above line with their ad script)
-      </p>
-    </div>
-    <p id="adCountdown">Ad ends in 5...</p>
+“You clicked this. That’s on you.”
+
+“HonestDrop exists because your time is valuable — and we respect that.
+No pointless tasks, no fake mining animations, no tapping virtual rocks pretending you're generating Bitcoin.
+
+Every other ‘Bitcoin game’ is also funded by ad revenue. We’re just not going to pretend it’s anything else.
+
+Here, it’s simple: You watch an ad. You get Bitcoin. No smoke, no mirrors, no gem packs, no energy bars, no BS.
+
+Our goal is to return as much ad revenue to you as possible. We’re starting with a 50/50 split (because while we love you, we also occasionally need food, electricity, and coffee strong enough to question reality).
+
+As we grow, your share increases. Because this only works if it works for you.
+
+Powered by honesty, coffee strong enough to second-guess life choices, caffeine in general, and whatever’s on sale at the grocery store.
+Not trying to buy a Lambo — just keeping it simple, transparent, and honest.
+
+Small drops can make a big difference. Especially when they're honest.”
+    </p>
+
+    <div class="ad-placeholder">📢 Ad Space – Mission Popup</div>
+
+    <br>
+    <button onclick="closeMission()">Back to reality</button>
   </div>
 
   <script>
     let sats = parseInt(localStorage.getItem("sats") || "0");
-    const rewardAmount = 16;
+    const rewardAmount = 15; // 15 sats per ad (prototype live test)
     const dailyLimit = 10;
     let adCount = parseInt(localStorage.getItem("adCount") || "0");
     let lastReset = parseInt(localStorage.getItem("lastReset") || Date.now());
-    let selectedWallet = "";
-
-    // First-time popup logic
-    window.onload = () => {
-      if (!localStorage.getItem("introShown")) {
-        document.getElementById("introOverlay").style.display = "block";
-        document.getElementById("introPopup").style.display = "block";
-      }
-    };
-
-    function closeIntro() {
-      localStorage.setItem("introShown", "true");
-      document.getElementById("introOverlay").style.display = "none";
-      document.getElementById("introPopup").style.display = "none";
-    }
+    let hasWithdrawnLive = localStorage.getItem("hasWithdrawnLive") === "true";
 
     function resetIfNeeded() {
       if (Date.now() - lastReset > 86400000) {
@@ -242,7 +247,7 @@
     resetIfNeeded();
     updateCounter();
 
-    // Watch ad logic
+    // Ad button logic
     document.getElementById("adButton").addEventListener("click", () => {
       if (adCount >= dailyLimit) {
         alert("🚫 That's it for today. Faucet needs more caffeine.");
@@ -254,7 +259,6 @@
 
       let remaining = 5;
       document.getElementById("adCountdown").innerText = `Ad ends in ${remaining}...`;
-
       let timer = setInterval(() => {
         remaining--;
         document.getElementById("adCountdown").innerText = `Ad ends in ${remaining}...`;
@@ -282,54 +286,63 @@
 
     // Withdrawal logic
     document.getElementById("withdrawButton").addEventListener("click", () => {
+      if (hasWithdrawnLive) {
+        alert("Prototype limit reached: you’ve already done your live withdrawal on this device. More coming once sponsors are live.");
+        return;
+      }
+      if (sats < 15) {
+        alert("You need at least 15 sats earned before you can withdraw in this prototype.");
+        return;
+      }
       document.getElementById("withdrawOverlay").style.display = "block";
       document.getElementById("withdrawPopup").style.display = "block";
     });
 
-    function showWalletInstructions(wallet) {
-      selectedWallet = wallet;
-      document.getElementById("walletTitle").innerText = wallet + " Instructions";
-
-      let instructions = {
-        "Wallet of Satoshi": "Open Wallet of Satoshi → Tap Receive → Copy your Lightning Address → Paste it below.",
-        "Cash App": "In Cash App: Tap Money → Bitcoin → Receive → Lightning → Copy the address → Paste below.",
-        "ZBD": "Open ZBD → Go to Wallet → Tap Receive Lightning → Copy address → Paste below.",
-        "Other Lightning Wallet": "Open your Lightning wallet → Find Receive → Copy Lightning address → Paste below."
-      };
-
-      document.getElementById("walletInstructions").innerText = instructions[wallet] || "";
-      document.getElementById("withdrawPopup").style.display = "none";
-      document.getElementById("walletInstructionPopup").style.display = "block";
-    }
-
-    function backToWithdraw() {
-      document.getElementById("walletInstructionPopup").style.display = "none";
-      document.getElementById("withdrawPopup").style.display = "block";
-    }
-
     function processFinalWithdrawal() {
       let val = document.getElementById("walletInput").value;
       if (!val) {
-        alert("Please enter your Lightning address or invoice first!");
+        alert("Please paste your Lightning invoice first!");
         return;
       }
 
-      alert(`Withdrawal Requested via ${selectedWallet}.\nPrototype Mode: We'll manually send sats.\nAddress/Invoice: ${val}`);
-      closeWithdraw();
+      // Decide how much to send: up to 15 sats for now
+      const payoutAmount = Math.min(sats, 15);
+
+      // Call backend SpeedWallet integration
+      fetch("/api/speed-withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ invoice: val, amount: payoutAmount })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          sats -= payoutAmount;
+          if (sats < 0) sats = 0;
+          localStorage.setItem("sats", sats);
+          hasWithdrawnLive = true;
+          localStorage.setItem("hasWithdrawnLive", "true");
+          updateCounter();
+          alert(`⚡ Sent ${payoutAmount} sats via SpeedWallet!`);
+        } else {
+          alert(`❌ Withdrawal failed: ${data.error || "Unknown error from backend"}`);
+        }
+      })
+      .catch(() => {
+        alert("⚠ Backend unreachable. The SpeedWallet payout API didn’t respond.");
+      })
+      .finally(() => {
+        closeWithdraw();
+      });
     }
 
     function closeWithdraw() {
       document.getElementById("withdrawOverlay").style.display = "none";
       document.getElementById("withdrawPopup").style.display = "none";
-      document.getElementById("walletInstructionPopup").style.display = "none";
     }
 
-    // Mission logic
+    // Mission Statement Popup
     document.getElementById("popupButton").addEventListener("click", () => {
-      document.getElementById("missionOverlay").style.display = "block";
-      document.getElementById("missionPopup").style.display = "block";
-    });
-    document.querySelector(".mission-statement").addEventListener("click", () => {
       document.getElementById("missionOverlay").style.display = "block";
       document.getElementById("missionPopup").style.display = "block";
     });
@@ -337,6 +350,17 @@
     function closeMission() {
       document.getElementById("missionOverlay").style.display = "none";
       document.getElementById("missionPopup").style.display = "none";
+    }
+
+    // Spinner popup logic
+    document.getElementById("spinnerButton").addEventListener("click", () => {
+      document.getElementById("spinnerOverlay").style.display = "block";
+      document.getElementById("spinnerPopup").style.display = "block";
+    });
+
+    function closeSpinner() {
+      document.getElementById("spinnerOverlay").style.display = "none";
+      document.getElementById("spinnerPopup").style.display = "none";
     }
   </script>
 </body>
