@@ -309,7 +309,7 @@ Small drops can make a big difference. Especially when they're honest.”
       const payoutAmount = Math.min(sats, 15);
 
       // Call backend SpeedWallet integration
-      fetch("/api/speed-withdraw", {
+     fetch("https://honestdrop-backend.onrender.com/api/speed-withdraw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ invoice: val, amount: payoutAmount })
