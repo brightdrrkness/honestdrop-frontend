@@ -108,7 +108,6 @@
 </head>
 
 <body>
-
   <img src="side-coins-left.png" class="side-img left-img">
   <img src="side-coins-right.png" class="side-img right-img">
 
@@ -127,13 +126,12 @@
     </button>
 
     <p id="satCounter">Total Earned: 0 sats</p>
-
     <button id="spinnerButton">🎡 Spin & Win (Coming Soon)</button>
 
     <p class="prototype">
-      🔧 Prototype Mode: Manual payout + live test.<br>
-      ⏳ Ad monetization coming soon via Bitstackd.<br>
-      ☕ “One step at a time. Preferably caffeinated.”
+      🔧 Prototype Mode (Live Test)<br>
+      ⛔ Withdrawal limit temporarily DISABLED for internal testing.<br>
+      ☕ Powered by caffeine & righteous fury.
     </p>
 
     <button id="popupButton">Caffeine > Logic</button>
@@ -144,192 +142,83 @@
     </div>
   </div>
 
-  <!-- Ad Popup -->
-  <div id="adOverlay"></div>
-  <div id="adPopup">
-    <h2>📺 Ad in Progress</h2>
-    <p id="adCountdown" style="font-size:16px;">Ad ends in 5...</p>
-    <div class="ad-placeholder">📢 Static Ad Placeholder</div>
-  </div>
-
-  <!-- Spinner Popup -->
-  <div id="spinnerOverlay"></div>
-  <div id="spinnerPopup">
-    <h2>🎡 Spin & Win (Coming Soon)</h2>
-    <img src="spinner-comingsoon.png" alt="Spinner Preview" style="width:300px; margin:15px auto; display:block;" />
-    <div class="ad-placeholder">📢 Ad Space – Spinner Popup</div>
-    <button onclick="closeSpinner()">Close</button>
-  </div>
-
   <!-- Withdrawal Popup -->
   <div id="withdrawOverlay"></div>
   <div id="withdrawPopup">
     <h2>Withdraw Bitcoin</h2>
-    <p style="font-size:13px; line-height:1.4;">
-      You’re in <strong>prototype mode</strong> using <strong>SpeedWallet</strong> for live payouts.<br><br>
-      For now, each device can do <strong>one live withdrawal of up to 15 sats</strong> while we line up sponsors.
+    <p style="font-size:13px;">
+      Prototype testing — live sats enabled.<br>
+      💥 *Limiter disabled for dev mode* 💥
     </p>
-
-    <p style="font-size:11px; color:#bbb;">
-      Works with ANY Lightning-enabled wallet (Wallet of Satoshi, Phoenix, Breez, Cash App, etc.).<br>
-      Just create an invoice in your wallet, paste it below, and confirm.
-    </p>
-
-    <ol style="text-align:left; font-size:13px; max-width:500px; margin:auto;">
-      <li>Generate a Lightning receive invoice in your wallet.</li>
-      <li>Paste the invoice below.</li>
-      <li>Confirm withdrawal to send your sats.</li>
-    </ol>
-
     <input type="text" id="walletInput" placeholder="Paste your Lightning invoice">
     <br><br>
     <button onclick="processFinalWithdrawal()">Confirm Withdrawal</button>
     <button onclick="closeWithdraw()">Cancel</button>
-
-    <div class="ad-placeholder">
-      📢 Prime spot for wallet ads — especially wallets with "Speed" in the name.<br>
-      Where users withdraw their Bitcoin… just saying 😉
-    </div>
-  </div>
-
-  <!-- Mission Statement Popup -->
-  <div id="missionOverlay"></div>
-  <div id="missionPopup">
-    <p style="white-space: pre-line; font-size:14px; line-height:1.5; max-width:600px; margin:0 auto; text-align:left;">
-
-“You clicked this. That’s on you.”
-
-“HonestDrop exists because your time is valuable — and we respect that.
-No pointless tasks, no fake mining animations, no tapping virtual rocks pretending you're generating Bitcoin.
-
-Every other ‘Bitcoin game’ is also funded by ad revenue. We’re just not going to pretend it’s anything else.
-
-Here, it’s simple: You watch an ad. You get Bitcoin. No smoke, no mirrors, no gem packs, no energy bars, no BS.
-
-Our goal is to return as much ad revenue to you as possible. We’re starting with a 50/50 split (because while we love you, we also occasionally need food, electricity, and coffee strong enough to question reality).
-
-As we grow, your share increases. Because this only works if it works for you.
-
-Powered by honesty, coffee strong enough to second-guess life choices, caffeine in general, and whatever’s on sale at the grocery store.
-Not trying to buy a Lambo — just keeping it simple, transparent, and honest.
-
-Small drops can make a big difference. Especially when they're honest.”
-    </p>
-
-    <div class="ad-placeholder">📢 Ad Space – Mission Popup</div>
-
-    <br>
-    <button onclick="closeMission()">Back to reality</button>
   </div>
 
   <script>
     let sats = parseInt(localStorage.getItem("sats") || "0");
-    const rewardAmount = 15; // 15 sats per ad (prototype live test)
-    const dailyLimit = 10;
+    const rewardAmount = 15; // earned per ad (prototype)
     let adCount = parseInt(localStorage.getItem("adCount") || "0");
-    let lastReset = parseInt(localStorage.getItem("lastReset") || Date.now());
-    let hasWithdrawnLive = localStorage.getItem("hasWithdrawnLive") === "true";
 
-    function resetIfNeeded() {
-      if (Date.now() - lastReset > 86400000) {
-        adCount = 0;
-        localStorage.setItem("adCount", adCount);
-        lastReset = Date.now();
-        localStorage.setItem("lastReset", lastReset);
-      }
-    }
+    // 🔥 REMOVE withdrawal limiter for testing
+    localStorage.setItem("hasWithdrawnLive", "false");
+    let hasWithdrawnLive = false;
 
     function updateCounter() {
       document.getElementById("satCounter").innerText =
-        `Total Earned: ${sats} sats | Ads: ${adCount}/${dailyLimit}`;
+        `Total Earned: ${sats} sats`;
     }
-
-    resetIfNeeded();
     updateCounter();
 
-    // Ad button logic
+    // Ad watch
     document.getElementById("adButton").addEventListener("click", () => {
-      if (adCount >= dailyLimit) {
-        alert("🚫 That's it for today. Faucet needs more caffeine.");
-        return;
-      }
-
-      document.getElementById("adOverlay").style.display = "block";
-      document.getElementById("adPopup").style.display = "block";
-
-      let remaining = 5;
-      document.getElementById("adCountdown").innerText = `Ad ends in ${remaining}...`;
-      let timer = setInterval(() => {
-        remaining--;
-        document.getElementById("adCountdown").innerText = `Ad ends in ${remaining}...`;
-        if (remaining <= 0) {
-          clearInterval(timer);
-          closeAdPopup();
-          rewardAdWatch();
-        }
-      }, 1000);
-    });
-
-    function closeAdPopup() {
-      document.getElementById("adOverlay").style.display = "none";
-      document.getElementById("adPopup").style.display = "none";
-    }
-
-    function rewardAdWatch() {
-      adCount++;
-      localStorage.setItem("adCount", adCount);
       sats += rewardAmount;
       localStorage.setItem("sats", sats);
       updateCounter();
       alert(`🎉 +${rewardAmount} sats earned!`);
-    }
+    });
 
-    // Withdrawal logic
+    // Withdraw
     document.getElementById("withdrawButton").addEventListener("click", () => {
-      if (hasWithdrawnLive) {
-        alert("Prototype limit reached: you’ve already done your live withdrawal on this device. More coming once sponsors are live.");
+      if (sats < 1) {
+        alert("You need to earn some sats first!");
         return;
       }
-      if (sats < 15) {
-        alert("You need at least 15 sats earned before you can withdraw in this prototype.");
-        return;
-      }
+
+      // -- limiter removed --
       document.getElementById("withdrawOverlay").style.display = "block";
       document.getElementById("withdrawPopup").style.display = "block";
     });
 
     function processFinalWithdrawal() {
-      let val = document.getElementById("walletInput").value;
-      if (!val) {
-        alert("Please paste your Lightning invoice first!");
+      let invoice = document.getElementById("walletInput").value;
+      if (!invoice) {
+        alert("Paste your Lightning invoice first!");
         return;
       }
 
-      // Decide how much to send: up to 15 sats for now
-      const payoutAmount = Math.min(sats, 15);
+      // 🚀 Send full sats
+      const payoutAmount = sats;
 
-      // Call backend SpeedWallet integration
-     fetch("https://honestdrop-backend-1.onrender.com/api/speed-withdraw", {
+      fetch("https://honestdrop-backend-1.onrender.com/api/speed-withdraw", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoice: val, amount: payoutAmount })
+        body: JSON.stringify({ invoice, amount: payoutAmount })
       })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          sats -= payoutAmount;
-          if (sats < 0) sats = 0;
-          localStorage.setItem("sats", sats);
-          hasWithdrawnLive = true;
-          localStorage.setItem("hasWithdrawnLive", "true");
+          localStorage.setItem("sats", "0");
+          sats = 0;
           updateCounter();
-          alert(`⚡ Sent ${payoutAmount} sats via SpeedWallet!`);
+          alert(`⚡ Sent ${payoutAmount} sats LIVE via SpeedWallet!`);
         } else {
-          alert(`❌ Withdrawal failed: ${data.error || "Unknown error from backend"}`);
+          alert(`❌ Withdrawal failed: ${data.message || "Unknown backend error"}`);
         }
       })
       .catch(() => {
-        alert("⚠ Backend unreachable. The SpeedWallet payout API didn’t respond.");
+        alert("⚠ Backend unreachable or API error.");
       })
       .finally(() => {
         closeWithdraw();
@@ -340,28 +229,7 @@ Small drops can make a big difference. Especially when they're honest.”
       document.getElementById("withdrawOverlay").style.display = "none";
       document.getElementById("withdrawPopup").style.display = "none";
     }
-
-    // Mission Statement Popup
-    document.getElementById("popupButton").addEventListener("click", () => {
-      document.getElementById("missionOverlay").style.display = "block";
-      document.getElementById("missionPopup").style.display = "block";
-    });
-
-    function closeMission() {
-      document.getElementById("missionOverlay").style.display = "none";
-      document.getElementById("missionPopup").style.display = "none";
-    }
-
-    // Spinner popup logic
-    document.getElementById("spinnerButton").addEventListener("click", () => {
-      document.getElementById("spinnerOverlay").style.display = "block";
-      document.getElementById("spinnerPopup").style.display = "block";
-    });
-
-    function closeSpinner() {
-      document.getElementById("spinnerOverlay").style.display = "none";
-      document.getElementById("spinnerPopup").style.display = "none";
-    }
   </script>
 </body>
 </html>
+
